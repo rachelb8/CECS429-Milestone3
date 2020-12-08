@@ -20,6 +20,7 @@ public class Classifier {
 	DiskPositionalIndex hamiltonIndex;
 	DiskPositionalIndex madisonIndex;
 	DiskPositionalIndex jayIndex;
+	DiskPositionalIndex disputedIndex;
 	List<String> fullVocabList;
 	
 
@@ -27,35 +28,42 @@ public class Classifier {
 		DocumentCorpus hamiltonCorpus = DirectoryCorpus.loadMilestone1Directory(Paths.get(dirSelection + "/HAMILTON").toAbsolutePath());
 		DocumentCorpus madisonCorpus = DirectoryCorpus.loadMilestone1Directory(Paths.get(dirSelection + "/MADISON").toAbsolutePath());
 		DocumentCorpus jayCorpus = DirectoryCorpus.loadMilestone1Directory(Paths.get(dirSelection + "/JAY").toAbsolutePath());
+		DocumentCorpus disputedCorpus = DirectoryCorpus.loadMilestone1Directory(Paths.get(dirSelection + "/DISPUTED").toAbsolutePath());
 		
 		Index hInvertedIndex = DiskIndexWriter.indexCorpus(hamiltonCorpus);
 		Index mInvertedIndex = DiskIndexWriter.indexCorpus(madisonCorpus);
 		Index jInvertedIndex = DiskIndexWriter.indexCorpus(jayCorpus);
+		Index dInvertedIndex = DiskIndexWriter.indexCorpus(disputedCorpus);
 		
 		DiskIndexWriter.writeIndex(hInvertedIndex, dirSelection + "/HAMILTON");
 		DiskIndexWriter.writeIndex(mInvertedIndex, dirSelection + "/MADISON");
 		DiskIndexWriter.writeIndex(jInvertedIndex, dirSelection + "/JAY");
+		DiskIndexWriter.writeIndex(dInvertedIndex, dirSelection + "/DISPUTED");
 		
 		hamiltonIndex = new DiskPositionalIndex(dirSelection + "/HAMILTON");
 		madisonIndex = new DiskPositionalIndex(dirSelection + "/MADISON");
 		jayIndex = new DiskPositionalIndex(dirSelection + "/JAY");
+		disputedIndex = new DiskPositionalIndex(dirSelection + "/DISPUTED");
 	}
 	
 	public void loadExistingIndexes(String dirSelection) {
 		hamiltonIndex = new DiskPositionalIndex(dirSelection + "/HAMILTON");
 		madisonIndex = new DiskPositionalIndex(dirSelection + "/MADISON");
 		jayIndex = new DiskPositionalIndex(dirSelection + "/JAY");
+		disputedIndex = new DiskPositionalIndex(dirSelection + "/DISPUTED");
 	}
 	
 	public void initializeFullVocabSet() {
 		List<String> hVocab = hamiltonIndex.getVocabulary();
 		List<String> mVocab = madisonIndex.getVocabulary();
 		List<String> jVocab = jayIndex.getVocabulary();
+		List<String> dVocab = disputedIndex.getVocabulary();
 		
 		List<String> fullVocab = new ArrayList<String>();
 		fullVocab.addAll(hVocab);
 		fullVocab.addAll(mVocab);
 		fullVocab.addAll(jVocab);
+		fullVocab.addAll(dVocab);
 		
 		fullVocabList = new ArrayList<>(new HashSet<>(fullVocab));
 		fullVocabList.removeAll(Arrays.asList("", null));
@@ -73,7 +81,7 @@ public class Classifier {
 //		c.loadExistingIndexes(LOCAL_PATH);
 		c.initializeFullVocabSet();
 		for (String s: c.getFullVocabSet()) {
-			System.out.println(s);
+			System.out.print(s + " ");
 		}
 		
 		System.out.println();
