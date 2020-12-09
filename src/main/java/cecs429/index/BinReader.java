@@ -12,7 +12,7 @@ import org.mapdb.Serializer;
 public class BinReader {
 
     public static void main(String[] args) {
-        PrintBin("Gibberish");
+        PrintBin("FedPapers\\HAMILTON");
     }
 
     public static void PrintBin(String path) {
