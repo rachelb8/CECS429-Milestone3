@@ -1,17 +1,19 @@
 package cecs429.classification;
+
 import cecs429.documents.*;
 
-
 import java.util.HashMap;
+import java.util.List;
 
 public class DocVectorModel {
-    int docId;
+    Classifier.DocClass classification = null;
     HashMap vectorComponents = new HashMap<String, Double>();
-    Classifier.DocClass classification;
     double docWeight;
 
-    public DocVectorModel(Classifier.DocClass classArg, List<String> listArg) {
-        classification = classArg;
+    public DocVectorModel(List<String> vocab) {
+        for (String lString : vocab ){
+            vectorComponents.put(lString, 0.0);
+        }
     }
 
     public void addComponent(String stringArg, double scoreArg){
@@ -22,12 +24,8 @@ public class DocVectorModel {
         docWeight = weightArg;
     }
 
-    public void setDocId(int idArg){
-        docId = idArg;
-    }
-
-    public int getDocId() {
-        return docId;
+    public double getWeight(){
+        return docWeight;
     }
     
     public void setClassification(Classifier.DocClass classArg){
