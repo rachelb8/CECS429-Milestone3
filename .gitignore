@@ -24,3 +24,6 @@ hs_err_pid*
 
 node_modules/
 /target/
+.classpath
+.project
+*.prefs
