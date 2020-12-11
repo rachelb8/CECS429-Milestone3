@@ -91,10 +91,9 @@ public class VectorSpace {
         for (int lInt : vectors.keySet()){
             DocVectorModel lVector = vectors.get(lInt);
             double weight = repIndex.getDocWeight(lInt);
+            lVector.setTitle(repCorpus.getDocument(lInt).getTitle());
             lVector.setWeight(weight);
-        }
-        for (int id: vectors.keySet()){
-            // System.out.println(repCorpus.getDocument(id).getTitle());
+            lVector.normalize();
         }
         // System.out.println(".");
     }
@@ -118,32 +117,15 @@ public class VectorSpace {
 
     }
 
-    public void addVector(DocVectorModel vectorArg){
-        vectors.add(vectorArg);
-    }
-
-    public void addVectorSpace(VectorSpace spaceArg){
-        for (DocVectorModel lVectorModel : spaceArg.vectors){
-            vectors.add(lVectorModel);
-        }        
-    }
-
-    public DocVectorModel getVectorModel(Classifier.DocClass classificationArg, int docId){
-        DocVectorModel resultVectorModel = null;
-        for (DocVectorModel lVector : vectors){
-            if (!lVector.classification.equals(classificationArg)){
-                continue;
-            }
-            if (lVector.docId != docId){
-                continue;
-            }
-            resultVectorModel = lVector;
+    public void setClassifications(Classifier.DocClass classArg){
+        for (DocVectorModel lModel: vectors.values()){
+            lModel.setClassification(classArg);
         }
-        return resultVectorModel;
-
     }
 
     public List<String> getVocab(){
         return vocab;
     }
+
+
 }

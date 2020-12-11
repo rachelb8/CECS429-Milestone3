@@ -28,10 +28,10 @@ public class Classifier {
 	// ENTER YOUR LOCAL PATH TO THE FEDERALIST PAPERS FOLDER
 	static String LOCAL_PATH = "C:\\Users\\Jonathan\\Documents\\GitHub\\CECS429-Milestone3\\FedPapers";
 	
-	// static String hPath = LOCAL_PATH + "/HAMILTON";
-	// static String jPath = LOCAL_PATH + "/JAY";
-	// static String mPath = LOCAL_PATH + "/MADISON";
-	// static String dPath = LOCAL_PATH + "/DISPUTED";
+	static String hPath = LOCAL_PATH + "/HAMILTON";
+	static String jPath = LOCAL_PATH + "/JAY";
+	static String mPath = LOCAL_PATH + "/MADISON";
+	static String dPath = LOCAL_PATH + "/DISPUTED";
 	static String aPath = LOCAL_PATH + "/ALL";
 
 	// DiskPositionalIndex hamiltonIndex;
@@ -206,6 +206,10 @@ public class Classifier {
 	//Construct indexs for each collection
 	//Construct 
 
+	public void ClassifyVectors(){
+
+	}
+
 	public static void main(String[] args) {
 		Classifier c = new Classifier();
 //		c.buildNewIndexes(LOCAL_PATH);
@@ -213,15 +217,49 @@ public class Classifier {
 		// c.initializeFull();
 //		c.initializeFullVocabSet()
 		boolean existsBool = true;
-		VectorSpace fullSpace = new VectorSpace(aPath, existsBool);
 		System.out.println("Done");
-		// VectorSpace hSpace = c.initializeVectorSpace(DocClass.HAMILTON, c.getFullVocabSet());
-		// VectorSpace jSpace = c.initializeVectorSpace(DocClass.JAY, c.getFullVocabSet());
-		// VectorSpace mSpace = c.initializeVectorSpace(DocClass.MADISON, c.getFullVocabSet());
-		// VectorSpace uSpace = c.initializeVectorSpace(DocClass.DISPUTED, c.getFullVocabSet());
+		VectorSpace fullSpace = new VectorSpace(aPath, existsBool);
+		
+		VectorSpace hSpace = new VectorSpace(hPath, existsBool);
+		hSpace.setClassifications(DocClass.HAMILTON);
+		
+		VectorSpace jSpace = new VectorSpace(jPath, existsBool);
+		jSpace.setClassifications(DocClass.JAY);
 
-		for (String s: c.getFullVocabSet()) {
-			System.out.print(s + " ");
+		VectorSpace mSpace = new VectorSpace(mPath, existsBool);
+		mSpace.setClassifications(DocClass.MADISON);
+
+		VectorSpace dSpace = new VectorSpace(dPath, existsBool);
+		dSpace.setClassifications(DocClass.DISPUTED);
+
+		VectorSpace[] trainingSets = new VectorSpace[]{
+			hSpace,
+			jSpace,
+			mSpace,
+			dSpace
+		};
+		List<DocVectorModel> fullSpaceVectors = new ArrayList<DocVectorModel>();
+		for (DocVectorModel lVector : fullSpace.vectors.values()){
+			fullSpaceVectors.add(lVector);
+		}
+
+		List<DocVectorModel> disputedVectors = new ArrayList<DocVectorModel>();
+		for (DocVectorModel lVector : dSpace.vectors.values()){
+			disputedVectors.add(lVector);
+		}			
+		
+		for (VectorSpace lSpace : trainingSets){
+			for (DocVectorModel lTraining : lSpace.vectors.values()){
+				for (DocVectorModel lVector : fullSpaceVectors){
+					if (lTraining.getTitle().equals(lVector.DocTitle)){
+						lVector.setClassification(lTraining.classification);
+					}
+				}
+			}
+		}
+		
+		for (DocVectorModel lVectorModel: fullSpace.vectors.values()) {
+			System.out.println(lVectorModel.DocTitle + " - " + lVectorModel.classification);
 		}
 		
 		System.out.println();
