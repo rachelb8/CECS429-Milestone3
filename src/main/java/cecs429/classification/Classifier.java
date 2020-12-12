@@ -50,7 +50,7 @@ public class Classifier {
 	}
 
 	public void classifyVectors(){
-
+		
 	}
 
 	public static void main(String[] args) {
@@ -89,44 +89,30 @@ public class Classifier {
 			disputedVectors.add(lVector);
 		}			
 		
+		List<DocVectorModel> trainingSetVectors = new ArrayList<DocVectorModel>();
 		for (VectorSpace lSpace : trainingSets){
 			for (DocVectorModel lTraining : lSpace.vectors.values()){
+				trainingSetVectors.add(lTraining);
 				for (DocVectorModel lVector : fullSpaceVectors){
 					if (lTraining.getTitle().equals(lVector.DocTitle)){
 						lVector.setClassification(lTraining.classification);
-						System.out.println(lVector.DocTitle + " - " + lVector.getClassification());
+//						System.out.println(lVector.DocTitle + " - " + lVector.getClassification());
 					}
 				}
 			}
 		}
 		
-		// for (DocVectorModel lVectorModel: fullSpace.vectors.values()) {
-		// 	System.out.println(lVectorModel.DocTitle + " - " + lVectorModel.classification);
-		// }
+		// kNN Classification
+		KNNClassification.applyKNN(disputedVectors, trainingSetVectors, 3);
+		
+		
+//		 for (DocVectorModel lVectorModel: fullSpace.vectors.values()) {
+//		 	System.out.println(lVectorModel.DocTitle + " - " + lVectorModel.classification);
+//		 }
 		
 //		for (String lString : fullSpace.vocab){
 //			System.out.print(lString + " ");
-//		}
-		
-		// Testing Against Neal's Benchmarks
-//		DocVectorModel vector53 = disputedVectors.stream().filter(vector -> vector.getTitle().equals("paper_53.txt")).findAny().get();
-//		DocVectorModel vector36 = fullSpaceVectors.stream().filter(vector -> vector.getTitle().equals("paper_36.txt")).findAny().get();
-//		DocVectorModel vector84 = fullSpaceVectors.stream().filter(vector -> vector.getTitle().equals("paper_84.txt")).findAny().get();
-//		DocVectorModel vector58 = fullSpaceVectors.stream().filter(vector -> vector.getTitle().equals("paper_58.txt")).findAny().get();
-//
-//		System.out.println("paper_53.txt");
-//		System.out.println("First 10 components: ");
-//		
-//		vector53.vectorComponents.entrySet()
-//		  .stream()
-//		  .sorted(Map.Entry.<String, Double>comparingByKey()).limit(9).forEach(result -> System.out.print(result.getValue() + " "));
-//		
-//		System.out.println("\nEuclid Distance: ");
-//		System.out.printf("1: paper_36.txt (%.6f)\n", DocVectorModel.euclidDistance(vector53, vector36));
-//		System.out.printf("2: paper_84.txt (%.6f)\n", DocVectorModel.euclidDistance(vector53, vector84));
-//		System.out.printf("3: paper_58.txt (%.6f)\n", DocVectorModel.euclidDistance(vector53, vector58));
-		
-		
+//		}	
 	}
 }
 //========================== Code Graveyard ==============
