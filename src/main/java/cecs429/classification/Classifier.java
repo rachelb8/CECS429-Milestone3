@@ -1,32 +1,18 @@
 package cecs429.classification;
 
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-
-import org.mapdb.BTreeMap;
-import org.mapdb.DB;
-import org.mapdb.DBMaker;
-import org.mapdb.Serializer;
-
+import java.util.Map;
 import cecs429.documents.DirectoryCorpus;
 import cecs429.documents.DocumentCorpus;
-import cecs429.index.ByteUtils;
 import cecs429.index.DiskIndexWriter;
 import cecs429.index.DiskPositionalIndex;
 import cecs429.index.Index;
 
 public class Classifier {
 	
-	// ENTER YOUR LOCAL PATH TO THE FEDERALIST PAPERS FOLDER
 	static Path LOCAL_PATH = Paths.get("FedPapers");
 	
 	static String hPath = LOCAL_PATH + "/HAMILTON";
@@ -35,10 +21,6 @@ public class Classifier {
 	static String dPath = LOCAL_PATH + "/DISPUTED";
 	static String aPath = LOCAL_PATH + "/ALL";
 
-	// DiskPositionalIndex hamiltonIndex;
-	// DiskPositionalIndex madisonIndex;
-	// DiskPositionalIndex jayIndex;
-	// DiskPositionalIndex disputedIndex;
 	DiskPositionalIndex allIndex;
 	List<String> fullVocabList;
 	
@@ -48,6 +30,7 @@ public class Classifier {
 		JAY,
 		DISPUTED
 	}
+	
 	public VectorSpace initializeFull(boolean existsBool){
 		DocumentCorpus allCorpus = DirectoryCorpus.loadMilestone1Directory(Paths.get(aPath).toAbsolutePath());
 
@@ -60,8 +43,96 @@ public class Classifier {
 		return new VectorSpace(allIndex, aInvertedIndex.getVocabulary(), existsBool);
 
 	}
+	
+	public List<String> getFullVocabSet()
+	{
+		return allIndex.getVocabulary();
+	}
 
-	// public void buildNewIndexes(String dirSelection) {
+	public void classifyVectors(){
+
+	}
+
+	public static void main(String[] args) {
+		Classifier c = new Classifier();
+		boolean existsBool = true;
+		VectorSpace fullSpace = c.initializeFull(existsBool);
+		
+		List<String> fullVocab = fullSpace.getVocab();
+		System.out.println("Done");
+		
+		VectorSpace hSpace = new VectorSpace(new DiskPositionalIndex(hPath), fullVocab, existsBool);
+		hSpace.setClassifications(DocClass.HAMILTON);
+		
+		VectorSpace jSpace = new VectorSpace(new DiskPositionalIndex(jPath), fullVocab, existsBool);
+		jSpace.setClassifications(DocClass.JAY);
+
+		VectorSpace mSpace = new VectorSpace(new DiskPositionalIndex(mPath), fullVocab, existsBool);
+		mSpace.setClassifications(DocClass.MADISON);
+
+		VectorSpace dSpace = new VectorSpace(new DiskPositionalIndex(dPath), fullVocab, existsBool);
+		dSpace.setClassifications(DocClass.DISPUTED);
+
+		VectorSpace[] trainingSets = new VectorSpace[]{
+			hSpace,
+			jSpace,
+			mSpace//,dSpace
+		};
+		
+		List<DocVectorModel> fullSpaceVectors = new ArrayList<DocVectorModel>();
+		for (DocVectorModel lVector : fullSpace.vectors.values()){
+			fullSpaceVectors.add(lVector);
+		}
+		
+		List<DocVectorModel> disputedVectors = new ArrayList<DocVectorModel>();
+		for (DocVectorModel lVector : dSpace.vectors.values()){
+			disputedVectors.add(lVector);
+		}			
+		
+		for (VectorSpace lSpace : trainingSets){
+			for (DocVectorModel lTraining : lSpace.vectors.values()){
+				for (DocVectorModel lVector : fullSpaceVectors){
+					if (lTraining.getTitle().equals(lVector.DocTitle)){
+						lVector.setClassification(lTraining.classification);
+						System.out.println(lVector.DocTitle + " - " + lVector.getClassification());
+					}
+				}
+			}
+		}
+		
+		// for (DocVectorModel lVectorModel: fullSpace.vectors.values()) {
+		// 	System.out.println(lVectorModel.DocTitle + " - " + lVectorModel.classification);
+		// }
+		
+//		for (String lString : fullSpace.vocab){
+//			System.out.print(lString + " ");
+//		}
+		
+		// Testing Against Neal's Benchmarks
+//		DocVectorModel vector53 = disputedVectors.stream().filter(vector -> vector.getTitle().equals("paper_53.txt")).findAny().get();
+//		DocVectorModel vector36 = fullSpaceVectors.stream().filter(vector -> vector.getTitle().equals("paper_36.txt")).findAny().get();
+//		DocVectorModel vector84 = fullSpaceVectors.stream().filter(vector -> vector.getTitle().equals("paper_84.txt")).findAny().get();
+//		DocVectorModel vector58 = fullSpaceVectors.stream().filter(vector -> vector.getTitle().equals("paper_58.txt")).findAny().get();
+//
+//		System.out.println("paper_53.txt");
+//		System.out.println("First 10 components: ");
+//		
+//		vector53.vectorComponents.entrySet()
+//		  .stream()
+//		  .sorted(Map.Entry.<String, Double>comparingByKey()).limit(9).forEach(result -> System.out.print(result.getValue() + " "));
+//		
+//		System.out.println("\nEuclid Distance: ");
+//		System.out.printf("1: paper_36.txt (%.6f)\n", DocVectorModel.euclidDistance(vector53, vector36));
+//		System.out.printf("2: paper_84.txt (%.6f)\n", DocVectorModel.euclidDistance(vector53, vector84));
+//		System.out.printf("3: paper_58.txt (%.6f)\n", DocVectorModel.euclidDistance(vector53, vector58));
+		
+		
+	}
+}
+//========================== Code Graveyard ==============
+//Here there be monsters
+/*
+ // public void buildNewIndexes(String dirSelection) {
 
 	// 	DocumentCorpus hamiltonCorpus = DirectoryCorpus.loadMilestone1Directory(Paths.get(hPath).toAbsolutePath());
 	// 	DocumentCorpus madisonCorpus = DirectoryCorpus.loadMilestone1Directory(Paths.get(mPath).toAbsolutePath());
@@ -110,13 +181,7 @@ public class Classifier {
 	// 	fullVocabList.removeAll(Arrays.asList("", null));
 	// 	Collections.sort(fullVocabList);
 	// }
-	
-	public List<String> getFullVocabSet()
-	{
-		return allIndex.getVocabulary();
-	}
-
-	// public VectorSpace initializeVectorSpace(DocClass classArg, List<String> vocList){
+	 // public VectorSpace initializeVectorSpace(DocClass classArg, List<String> vocList){
 	// 	String directory = "";
 	// 	DiskPositionalIndex lIndex;
 	// 	switch (classArg) {
@@ -208,69 +273,12 @@ public class Classifier {
 
 	//Construct indexs for each collection
 	//Construct 
-
-	public void ClassifyVectors(){
-
-	}
-
-	public static void main(String[] args) {
-		Classifier c = new Classifier();
-//		c.buildNewIndexes(LOCAL_PATH);
-//		c.loadExistingIndexes(LOCAL_PATH);
-		boolean existsBool = true;
-		VectorSpace fullSpace = c.initializeFull(existsBool);
-//		c.initializeFullVocabSet()
-		
-		List<String> fullVocab = fullSpace.getVocab();
-		System.out.println("Done");
-		
-		VectorSpace hSpace = new VectorSpace(new DiskPositionalIndex(hPath), fullVocab, existsBool);
-		hSpace.setClassifications(DocClass.HAMILTON);
-		
-		VectorSpace jSpace = new VectorSpace(new DiskPositionalIndex(jPath), fullVocab, existsBool);
-		jSpace.setClassifications(DocClass.JAY);
-
-		VectorSpace mSpace = new VectorSpace(new DiskPositionalIndex(mPath), fullVocab, existsBool);
-		mSpace.setClassifications(DocClass.MADISON);
-
-		VectorSpace dSpace = new VectorSpace(new DiskPositionalIndex(dPath), fullVocab, existsBool);
-		dSpace.setClassifications(DocClass.DISPUTED);
-
-		VectorSpace[] trainingSets = new VectorSpace[]{
-			hSpace,
-			jSpace,
-			mSpace//,dSpace
-		};
-		List<DocVectorModel> fullSpaceVectors = new ArrayList<DocVectorModel>();
-		for (DocVectorModel lVector : fullSpace.vectors.values()){
-			fullSpaceVectors.add(lVector);
-		}
-
-		List<DocVectorModel> disputedVectors = new ArrayList<DocVectorModel>();
-		for (DocVectorModel lVector : dSpace.vectors.values()){
-			disputedVectors.add(lVector);
-		}			
-		
-		for (VectorSpace lSpace : trainingSets){
-			for (DocVectorModel lTraining : lSpace.vectors.values()){
-				for (DocVectorModel lVector : fullSpaceVectors){
-					if (lTraining.getTitle().equals(lVector.DocTitle)){
-						lVector.setClassification(lTraining.classification);
-						System.out.println(lVector.DocTitle + " - " + lVector.getClassification());
-					}
-				}
-			}
-		}
-		
-		// for (DocVectorModel lVectorModel: fullSpace.vectors.values()) {
-		// 	System.out.println(lVectorModel.DocTitle + " - " + lVectorModel.classification);
-		// }
-		
-		for (String lString : fullSpace.vocab){
-			System.out.print(lString + " ");
-		}
-
-		System.out.println();
-		// System.out.println(c.getFullVocabSet().size());
-	}
-}
+				//Test for benchmark check
+//			if(lVector.DocTitle.equals("paper_53.txt")) {
+				
+//				lVector.vectorComponents.entrySet()
+//				  .stream()
+//				  .sorted(Map.Entry.<String, Double>comparingByKey())
+//				  .forEach(System.out::println);
+//			}
+*/
