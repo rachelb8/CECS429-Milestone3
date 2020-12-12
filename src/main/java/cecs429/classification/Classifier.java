@@ -216,7 +216,7 @@ public class Classifier {
 //		c.loadExistingIndexes(LOCAL_PATH);
 		// c.initializeFull();
 //		c.initializeFullVocabSet()
-		boolean existsBool = true;
+		boolean existsBool = false;
 		System.out.println("Done");
 		VectorSpace fullSpace = new VectorSpace(aPath, existsBool);
 		
@@ -235,8 +235,7 @@ public class Classifier {
 		VectorSpace[] trainingSets = new VectorSpace[]{
 			hSpace,
 			jSpace,
-			mSpace,
-			dSpace
+			mSpace//,dSpace
 		};
 		List<DocVectorModel> fullSpaceVectors = new ArrayList<DocVectorModel>();
 		for (DocVectorModel lVector : fullSpace.vectors.values()){
@@ -258,10 +257,14 @@ public class Classifier {
 			}
 		}
 		
-		for (DocVectorModel lVectorModel: fullSpace.vectors.values()) {
-			System.out.println(lVectorModel.DocTitle + " - " + lVectorModel.classification);
-		}
+		// for (DocVectorModel lVectorModel: fullSpace.vectors.values()) {
+		// 	System.out.println(lVectorModel.DocTitle + " - " + lVectorModel.classification);
+		// }
 		
+		for (String lString : fullSpace.vocab){
+			System.out.print(lString + " ");
+		}
+
 		System.out.println();
 		System.out.println(c.getFullVocabSet().size());
 	}
