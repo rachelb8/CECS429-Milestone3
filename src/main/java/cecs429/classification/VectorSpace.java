@@ -28,20 +28,17 @@ public class VectorSpace {
     HashMap <Integer, DocVectorModel> vectors;
     List<String> vocab;
     
-    public VectorSpace(String directory, boolean existingIndex){
-        repCorpus = DirectoryCorpus.loadMilestone1Directory(Paths.get(directory).toAbsolutePath());
+    public VectorSpace(DiskPositionalIndex dIndexArg, List<String> vocabularyArg, boolean existsBool){
+        repCorpus = DirectoryCorpus.loadMilestone1Directory(Paths.get(dIndexArg.getCorpusPath()).toAbsolutePath());
         repCorpus.getDocuments();
-        if (existingIndex){
-            repIndex = new DiskPositionalIndex(directory);            
-        }
-        else{
-            repIndex = new DiskPositionalIndex(directory);
-            Index repInvertedIndex = DiskIndexWriter.indexCorpus(repCorpus);
-            DiskIndexWriter.writeIndex(repInvertedIndex, directory);
+        repIndex = dIndexArg;
+        if (!existsBool){
+            Index lIndex = DiskIndexWriter.indexCorpus(repCorpus);
+            DiskIndexWriter.writeIndex(lIndex, dIndexArg.getCorpusPath());
         }
         vectors = new HashMap <Integer, DocVectorModel> ();
-        vocab = repIndex.getVocabulary();
-        initializeVectorSpace(directory);
+        vocab = vocabularyArg;
+        initializeVectorSpace(dIndexArg.getCorpusPath());
     }
     
     public void initializeVectorSpace(String directoryArg){

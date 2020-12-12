@@ -24,6 +24,10 @@ public class DiskPositionalIndex implements Index {
         weightsBinPath = corpusPath + "\\docWeights.bin";
     }
 
+    public String getCorpusPath(){
+        return corpusPath;
+    }
+
     @Override
     public List<Posting> getRankedPostings(String term) {
         List<Posting> postingsResult = new ArrayList<Posting>();

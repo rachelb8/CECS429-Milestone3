@@ -47,7 +47,7 @@ public class Classifier {
 		JAY,
 		DISPUTED
 	}
-	public void initializeFull(){
+	public VectorSpace initializeFull(boolean existsBool){
 		DocumentCorpus allCorpus = DirectoryCorpus.loadMilestone1Directory(Paths.get(aPath).toAbsolutePath());
 
 		allIndex = new DiskPositionalIndex(aPath);
@@ -55,6 +55,8 @@ public class Classifier {
 		Index aInvertedIndex = DiskIndexWriter.indexCorpus(allCorpus);
 
 		DiskIndexWriter.writeIndex(aInvertedIndex, aPath);
+
+		return new VectorSpace(allIndex, aInvertedIndex.getVocabulary(), existsBool);
 
 	}
 
@@ -214,22 +216,23 @@ public class Classifier {
 		Classifier c = new Classifier();
 //		c.buildNewIndexes(LOCAL_PATH);
 //		c.loadExistingIndexes(LOCAL_PATH);
-		// c.initializeFull();
+		boolean existsBool = true;
+		VectorSpace fullSpace = c.initializeFull(existsBool);
 //		c.initializeFullVocabSet()
-		boolean existsBool = false;
-		System.out.println("Done");
-		VectorSpace fullSpace = new VectorSpace(aPath, existsBool);
 		
-		VectorSpace hSpace = new VectorSpace(hPath, existsBool);
+		List<String> fullVocab = fullSpace.getVocab();
+		System.out.println("Done");
+		
+		VectorSpace hSpace = new VectorSpace(new DiskPositionalIndex(hPath), fullVocab, existsBool);
 		hSpace.setClassifications(DocClass.HAMILTON);
 		
-		VectorSpace jSpace = new VectorSpace(jPath, existsBool);
+		VectorSpace jSpace = new VectorSpace(new DiskPositionalIndex(jPath), fullVocab, existsBool);
 		jSpace.setClassifications(DocClass.JAY);
 
-		VectorSpace mSpace = new VectorSpace(mPath, existsBool);
+		VectorSpace mSpace = new VectorSpace(new DiskPositionalIndex(mPath), fullVocab, existsBool);
 		mSpace.setClassifications(DocClass.MADISON);
 
-		VectorSpace dSpace = new VectorSpace(dPath, existsBool);
+		VectorSpace dSpace = new VectorSpace(new DiskPositionalIndex(dPath), fullVocab, existsBool);
 		dSpace.setClassifications(DocClass.DISPUTED);
 
 		VectorSpace[] trainingSets = new VectorSpace[]{
@@ -252,6 +255,7 @@ public class Classifier {
 				for (DocVectorModel lVector : fullSpaceVectors){
 					if (lTraining.getTitle().equals(lVector.DocTitle)){
 						lVector.setClassification(lTraining.classification);
+						System.out.println(lVector.DocTitle + " - " + lVector.getClassification());
 					}
 				}
 			}
@@ -266,6 +270,6 @@ public class Classifier {
 		}
 
 		System.out.println();
-		System.out.println(c.getFullVocabSet().size());
+		// System.out.println(c.getFullVocabSet().size());
 	}
 }
