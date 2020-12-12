@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,7 +27,7 @@ import cecs429.index.Index;
 public class Classifier {
 	
 	// ENTER YOUR LOCAL PATH TO THE FEDERALIST PAPERS FOLDER
-	static String LOCAL_PATH = "C:\\Users\\Jonathan\\Documents\\GitHub\\CECS429-Milestone3\\FedPapers";
+	static Path LOCAL_PATH = Paths.get("FedPapers");
 	
 	static String hPath = LOCAL_PATH + "/HAMILTON";
 	static String jPath = LOCAL_PATH + "/JAY";
