@@ -136,7 +136,11 @@ public class DiskIndexWriter {
 				List<String> processedStrings = processor.processToken(currentTerm);
 				for (String lToken : processedStrings) {
 					processedTokens.add(lToken);
-				}				
+                }
+                processedTokens.remove("");
+                if (processedTokens.isEmpty()){
+                    continue;
+                }
 				for (String proToken: processedTokens) {
                     Integer tokenScore = docScores.get(proToken);
                     if (tokenScore == null){
@@ -187,7 +191,11 @@ public class DiskIndexWriter {
             }
 		}		
 		return positionalInvertedIndex;
-	}
+    }
+    
+
+
+
 }
 
 //========================== Code Graveyard ==============
