@@ -102,10 +102,8 @@ public class Classifier {
 			disputedVectors.add(lVector);
 		}
 		
-		List<DocVectorModel> trainingSetVectors2 = new ArrayList<DocVectorModel>();
 		for (VectorSpace lSpace : trainingSets){
 			for (DocVectorModel lTraining : lSpace.vectors.values()){
-				trainingSetVectors2.add(lTraining);
 				for (DocVectorModel lVector : fullSpaceVectors){
 					if (lTraining.getTitle().equals(lVector.DocTitle)){
 						lVector.setClassification(lTraining.classification);
@@ -116,7 +114,7 @@ public class Classifier {
 		}
 
 		// Rocchio Classification
-		RocchioClassification.applyRocchio(disputedVectors, trainingSetVectors2);
+		RocchioClassification.applyRocchio(disputedVectors, trainingSets);
 		
 		// for (String lString : fullSpace.vocab){
 		// 	System.out.print(lString + " ");
