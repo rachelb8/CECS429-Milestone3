@@ -1,6 +1,5 @@
 package cecs429.classification;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -11,6 +10,7 @@ import static java.util.Map.Entry.*;
 public class KNNClassification {
 	
 	public static void applyKNN(List<DocVectorModel> disputedDocs, List<DocVectorModel> trainingSetVectors, int k) {
+		disputedDocs.sort((o1, o2) -> o1.getTitle().compareTo(o2.getTitle()));
 		for(DocVectorModel disputedDoc: disputedDocs) {
 			Map<String, Double> distances = new HashMap<String, Double>();
 			for (int i = 0; i < trainingSetVectors.size(); i++) {
@@ -66,7 +66,11 @@ public class KNNClassification {
 				System.out.printf(count + ": " + docTitle + "(%.6f)" + " - " + trainingClassifications.get(docTitle) + "\n\n", sortedDistances.get(docTitle));
 				count++;
 			}
-		}
-		
+			System.out.println("Hamilton Count: " + hCount);
+			System.out.println("Madison Count: " + mCount);
+			System.out.println("Jay Count: " + jCount);
+			System.out.println();
+			
+		}	
 	}
 }

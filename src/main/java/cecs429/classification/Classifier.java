@@ -24,6 +24,11 @@ public class Classifier {
 	DiskPositionalIndex allIndex;
 	List<String> fullVocabList;
 	
+	static List<DocVectorModel> fullSpaceVectors;
+	static List<DocVectorModel> disputedVectors;
+	static List<DocVectorModel> trainingSetVectors;
+	static VectorSpace[] trainingSets;
+	
 	public static enum DocClass {
 		HAMILTON,
 		MADISON,
@@ -50,7 +55,57 @@ public class Classifier {
 	}
 
 	public void classifyVectors(){
+
+	}
+	
+	public void runPrerecordedData() {
+		/*
+		 * Rocchio classification:
+		 * For the document "paper_52.txt":
+		 * 	- the first 30 components (alphabetically) of the normalized vector for the document
+		 *	- TODO the exact Euclidian distance between the normalized vector for the document and each of the 3 class centroids
+		 */
+		System.out.println("Rocchio Classification: ");
+		DocVectorModel vector52 = disputedVectors.stream().filter(vector -> vector.getTitle().equals("paper_52.txt")).findAny().get();
+		printFirstNVectorComponents(vector52, 30);
+		List<DocVectorModel> disputedVectors52 = new ArrayList<DocVectorModel>();
+		disputedVectors52.add(vector52);
+//		RocchioClassification.applyRocchio(disputedVectors52, trainingSets);
 		
+		/*
+		 * kNN classification:
+		 * For the document "paper_53.txt":
+		 * 	- the first 30 components (alphabetically) of the normalized vector for the document
+		 *	- the 5 closest (k=5) vectors in the training set, and their Euclidian distances
+		 */
+		System.out.println();
+		System.out.println("kNN Classification: ");
+		DocVectorModel vector53 = disputedVectors.stream().filter(vector -> vector.getTitle().equals("paper_53.txt")).findAny().get();
+		printFirstNVectorComponents(vector53, 30);
+		List<DocVectorModel> disputedVectors53 = new ArrayList<DocVectorModel>();
+		disputedVectors53.add(vector53);
+		KNNClassification.applyKNN(disputedVectors53, trainingSetVectors, 5);
+	}
+	
+	public void runLiveDemo() {
+//		System.out.println("Rocchio Classification: ");
+//		RocchioClassification.applyRocchio(disputedVectors, trainingSets);
+		System.out.println();
+		System.out.println("kNN Classification: ");
+		KNNClassification.applyKNN(disputedVectors, trainingSetVectors, 5);
+	}
+	
+	public static void printFirstNVectorComponents(DocVectorModel vector, int n) {
+		System.out.println("\"" + vector.getTitle() + "\"");
+		System.out.println("First 30 components of the normalized vector:");
+		System.out.print("<");
+		vector.vectorComponents.entrySet()
+			.stream()
+			.sorted(Map.Entry.<String, Double>comparingByKey())
+			.limit(n)
+			.forEach(result -> System.out.print(result.getValue() + ", "));	
+		System.out.println(">");
+		System.out.println();
 	}
 
 	public static void main(String[] args) {
@@ -59,7 +114,6 @@ public class Classifier {
 		VectorSpace fullSpace = c.initializeFull(existsBool);
 		
 		List<String> fullVocab = fullSpace.getVocab();
-		System.out.println("Done");
 		
 		VectorSpace hSpace = new VectorSpace(new DiskPositionalIndex(hPath), fullVocab, existsBool);
 		hSpace.setClassifications(DocClass.HAMILTON);
@@ -73,46 +127,35 @@ public class Classifier {
 		VectorSpace dSpace = new VectorSpace(new DiskPositionalIndex(dPath), fullVocab, existsBool);
 		dSpace.setClassifications(DocClass.DISPUTED);
 
-		VectorSpace[] trainingSets = new VectorSpace[]{
+		trainingSets = new VectorSpace[]{
 			hSpace,
 			jSpace,
-			mSpace//,dSpace
+			mSpace
 		};
 		
-		List<DocVectorModel> fullSpaceVectors = new ArrayList<DocVectorModel>();
+		fullSpaceVectors = new ArrayList<DocVectorModel>();
 		for (DocVectorModel lVector : fullSpace.vectors.values()){
 			fullSpaceVectors.add(lVector);
 		}
 		
-		List<DocVectorModel> disputedVectors = new ArrayList<DocVectorModel>();
+		disputedVectors = new ArrayList<DocVectorModel>();
 		for (DocVectorModel lVector : dSpace.vectors.values()){
 			disputedVectors.add(lVector);
 		}			
 		
-		List<DocVectorModel> trainingSetVectors = new ArrayList<DocVectorModel>();
+		trainingSetVectors = new ArrayList<DocVectorModel>();
 		for (VectorSpace lSpace : trainingSets){
 			for (DocVectorModel lTraining : lSpace.vectors.values()){
 				trainingSetVectors.add(lTraining);
 				for (DocVectorModel lVector : fullSpaceVectors){
 					if (lTraining.getTitle().equals(lVector.DocTitle)){
 						lVector.setClassification(lTraining.classification);
-//						System.out.println(lVector.DocTitle + " - " + lVector.getClassification());
 					}
 				}
 			}
-		}
-		
-		// kNN Classification
-		KNNClassification.applyKNN(disputedVectors, trainingSetVectors, 3);
-		
-		
-//		 for (DocVectorModel lVectorModel: fullSpace.vectors.values()) {
-//		 	System.out.println(lVectorModel.DocTitle + " - " + lVectorModel.classification);
-//		 }
-		
-//		for (String lString : fullSpace.vocab){
-//			System.out.print(lString + " ");
-//		}	
+		}	
+//		c.runPrerecordedData();
+		c.runLiveDemo();
 	}
 }
 //========================== Code Graveyard ==============
@@ -267,4 +310,11 @@ public class Classifier {
 //				  .sorted(Map.Entry.<String, Double>comparingByKey())
 //				  .forEach(System.out::println);
 //			}
-*/
+ * //		 for (DocVectorModel lVectorModel: fullSpace.vectors.values()) {
+//		 	System.out.println(lVectorModel.DocTitle + " - " + lVectorModel.classification);
+//		 }
+		
+//		for (String lString : fullSpace.vocab){
+//			System.out.print(lString + " ");
+//		}	
+ */
