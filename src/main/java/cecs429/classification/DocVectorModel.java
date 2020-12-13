@@ -67,4 +67,14 @@ public class DocVectorModel {
     	return Math.sqrt(total);
     }
     
+    public static double euclidDistance(DocVectorModel vector1, DocVectorModel vector2) {
+    	double total = 0;
+    	double diff;
+    	
+    	for (String lKey : vector1.vectorComponents.keySet()){
+    		diff = vector2.vectorComponents.get(lKey) - vector1.vectorComponents.get(lKey);
+    		total += diff * diff;
+    	}
+    	return Math.sqrt(total);
+    }
 }

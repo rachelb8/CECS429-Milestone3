@@ -1,32 +1,18 @@
 package cecs429.classification;
 
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-
-import org.mapdb.BTreeMap;
-import org.mapdb.DB;
-import org.mapdb.DBMaker;
-import org.mapdb.Serializer;
-
+import java.util.Map;
 import cecs429.documents.DirectoryCorpus;
 import cecs429.documents.DocumentCorpus;
-import cecs429.index.ByteUtils;
 import cecs429.index.DiskIndexWriter;
 import cecs429.index.DiskPositionalIndex;
 import cecs429.index.Index;
 
 public class Classifier {
 	
-	// ENTER YOUR LOCAL PATH TO THE FEDERALIST PAPERS FOLDER
 	static Path LOCAL_PATH = Paths.get("FedPapers");
 	
 	static String hPath = LOCAL_PATH + "/HAMILTON";
@@ -44,7 +30,6 @@ public class Classifier {
 		JAY,
 		DISPUTED
 	}
-
 	public VectorSpace initializeFull(boolean existsBool){
 		DocumentCorpus allCorpus = DirectoryCorpus.loadMilestone1Directory(Paths.get(aPath).toAbsolutePath());
 
@@ -91,7 +76,6 @@ public class Classifier {
 			jSpace,
 			mSpace//,dSpace
 		};
-
 		List<DocVectorModel> fullSpaceVectors = new ArrayList<DocVectorModel>();
 		for (DocVectorModel lVector : fullSpace.vectors.values()){
 			fullSpaceVectors.add(lVector);
