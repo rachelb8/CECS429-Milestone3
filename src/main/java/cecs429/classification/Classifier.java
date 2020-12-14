@@ -23,6 +23,11 @@ public class Classifier {
 	DiskPositionalIndex allIndex;
 	List<String> fullVocabList;
 	
+	static List<DocVectorModel> fullSpaceVectors;
+	static List<DocVectorModel> disputedVectors;
+	static List<DocVectorModel> trainingSetVectors;
+	static VectorSpace[] trainingSets;
+	
 	public static enum DocClass {
 		HAMILTON,
 		MADISON,
@@ -56,7 +61,6 @@ public class Classifier {
 		VectorSpace fullSpace = c.initializeFull(existsBool);
 		
 		List<String> fullVocab = fullSpace.getVocab();
-		System.out.println("Done");
 		
 		VectorSpace hSpace = new VectorSpace(new DiskPositionalIndex(hPath), fullVocab, existsBool);
 		hSpace.setClassifications(DocClass.HAMILTON);
@@ -70,10 +74,10 @@ public class Classifier {
 		VectorSpace dSpace = new VectorSpace(new DiskPositionalIndex(dPath), fullVocab, existsBool);
 		dSpace.setClassifications(DocClass.DISPUTED);
 
-		VectorSpace[] trainingSets = new VectorSpace[]{
+		trainingSets = new VectorSpace[]{
 			hSpace,
 			jSpace,
-			mSpace//,dSpace
+			mSpace
 		};
 		List<DocVectorModel> fullSpaceVectors = new ArrayList<DocVectorModel>();
 		for (DocVectorModel lVector : fullSpace.vectors.values()){
