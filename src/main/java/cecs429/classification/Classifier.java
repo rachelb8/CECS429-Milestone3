@@ -154,8 +154,8 @@ public class Classifier {
 				}
 			}
 		}	
-		c.runPrerecordedData();
-		//c.runLiveDemo();
+//		c.runPrerecordedData();
+		c.runLiveDemo();
 	}
 }
 //========================== Code Graveyard ==============
