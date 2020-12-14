@@ -5,86 +5,61 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import cecs429.classification.Classifier.DocClass;
+import ch.qos.logback.core.net.SyslogOutputStream;
 import static java.util.stream.Collectors.*;
-
 import java.util.ArrayList;
-
 import static java.util.Map.Entry.*;
 
 public class RocchioClassification {
 
-    // 1. Find centroid vector for /hamilton, /madison, /jay (add all doc vectors / # of docs)
-    // 2. For each disputed document, get doc vector for that
-    // 3. Call euclidDistance(hamCentroidVector / madCentroidVector / jayCentroidVector, currentDocVector)
-    // 4. Compare the result
-    // 5. Classify currentDocVector based off smallest euclidDistance
+	public static DocVectorModel findCentroid(VectorSpace vs) {
+		List<DocVectorModel> classVectors = new ArrayList<DocVectorModel>();
+		for (DocVectorModel lVector : vs.vectors.values()) {
+			classVectors.add(lVector);
+		}
+		DocVectorModel centroid = classVectors.get(0);
+		for (int i = 1; i < classVectors.size(); i++) {
+			for (Map.Entry<String, Double> entry : classVectors.get(i).vectorComponents.entrySet()) {
+				centroid.vectorComponents.put(entry.getKey(), centroid.vectorComponents.get(entry.getKey()) + entry.getValue());
+			}
+		}
+
+		for (Map.Entry<String, Double> entry : centroid.vectorComponents.entrySet()) {
+			centroid.vectorComponents.put(entry.getKey(), centroid.vectorComponents.get(entry.getKey()) / classVectors.size());
+		}
+
+		// centroid.vectorComponents.entrySet().stream()
+		//  								    .sorted(Map.Entry.<String, Double>comparingByKey())
+		// 									.forEach(System.out::println);
+		return centroid;
+	}
 
     public static void applyRocchio(List<DocVectorModel> disputedDocs, VectorSpace[] trainingSets) {
 
-        List<DocVectorModel> hCentroidVector = new ArrayList<DocVectorModel>(); // Hamilton
-		
+        DocVectorModel hCentroidVector = findCentroid(trainingSets[0]); // Hamilton
+		DocVectorModel jCentroidVector = findCentroid(trainingSets[1]); // Jay
+		DocVectorModel mCentroidVector = findCentroid(trainingSets[2]); // Madison
 
-		List<DocVectorModel> mCentroidVector = new ArrayList<DocVectorModel>(); // Madison
-		
-		List<DocVectorModel> jCentroidVector = new ArrayList<DocVectorModel>(); // Jay
-        
-        
-        // for(DocVectorModel disputedDoc: disputedDocs) {
-		// 	Map<String, Double> distances = new HashMap<String, Double>();
-		// 	for (int i = 0; i < trainingSetVectors.size(); i++) {
-		// 		distances.put(trainingSetVectors.get(i).DocTitle, DocVectorModel.euclidDistance(disputedDoc, trainingSetVectors.get(i)));
-		// 	}
+		for (DocVectorModel disputedDoc : disputedDocs) {
 			
-		// 	Map<String, Double> sortedDistances = distances.entrySet()
-		// 			.stream()
-		// 			.sorted(comparingByValue())
-		// 			.limit(3)
-		// 			.collect(toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
-		
-		// 	int hCount = 0;
-		// 	int jCount = 0;
-        //     int mCount = 0;
-            
-		// 	Map<String, Classifier.DocClass> trainingClassifications = new HashMap<String, Classifier.DocClass>();
-		// 	for(String docTitle: sortedDistances.keySet()) {
-		// 		for (DocVectorModel lVector : trainingSetVectors){
-					
-		// 			if (docTitle.equals(lVector.DocTitle)){
-		// 				trainingClassifications.put(docTitle, lVector.getClassification());
-		// 				switch(lVector.classification) {
-		// 					case HAMILTON:
-		// 						hCount++;
-		// 						break;
-		// 					case JAY:
-		// 						jCount++;
-		// 						break;
-		// 					case MADISON:
-		// 						mCount++;
-		// 						break;
-		// 					default:
-		// 						break;
-		// 				}
-		// 			}
-		// 		}
-		// 	}
-			
-		// 	if (hCount > jCount && hCount > mCount) {
-		// 		disputedDoc.setClassification(Classifier.DocClass.HAMILTON);
-		// 	} else if(jCount > hCount && jCount > mCount) {
-		// 		disputedDoc.setClassification(Classifier.DocClass.JAY);
-		// 	} else if(mCount > hCount && mCount > jCount) {
-		// 		disputedDoc.setClassification(Classifier.DocClass.MADISON);
-		// 	} else {
-		// 		// Tie Logic
-		// 	}
-			
-		// 	System.out.println(disputedDoc.DocTitle + " classification: " + disputedDoc.getClassification());
-		// 	System.out.println(disputedDoc.DocTitle + " nearest to:");
-		// 	int count = 1;
-		// 	for(String docTitle: sortedDistances.keySet()) {
-		// 		System.out.printf(count + ": " + docTitle + "(%.6f)" + " - " + trainingClassifications.get(docTitle) + "\n\n", sortedDistances.get(docTitle));
-		// 		count++;
-		// 	}
-		//}
+			Double hDistance = DocVectorModel.euclidDistance(disputedDoc, hCentroidVector); // Distance to Hamilton centroid
+			Double mDistance = DocVectorModel.euclidDistance(disputedDoc, mCentroidVector); // Distance to Madison centroid
+			Double jDistance = DocVectorModel.euclidDistance(disputedDoc, jCentroidVector); // Distance to Jay centroid
+
+			if (hDistance < mDistance && hDistance < jDistance) {
+				disputedDoc.setClassification(DocClass.HAMILTON);
+			} else if (mDistance < hDistance && mDistance < jDistance) {
+				disputedDoc.setClassification(DocClass.MADISON);
+			} else {
+				disputedDoc.setClassification(DocClass.JAY);
+			}
+
+			System.out.printf("Dist to /hamilton for doc " + disputedDoc.DocTitle + " is %.6f" + "\n" ,hDistance);
+			System.out.printf("Dist to /madison for doc " + disputedDoc.DocTitle + " is %.6f" + "\n" ,mDistance);
+			System.out.printf("Dist to /jay for doc " + disputedDoc.DocTitle + " is %.6f" + "\n" ,jDistance);
+			System.out.println("Lowest distance for " + disputedDoc.DocTitle + " is /" + disputedDoc.getClassification().toString().toLowerCase());
+			System.out.println();
+		}
     }
 }
