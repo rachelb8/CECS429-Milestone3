@@ -4,7 +4,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import cecs429.documents.DirectoryCorpus;
 import cecs429.documents.DocumentCorpus;
 import cecs429.index.DiskIndexWriter;
