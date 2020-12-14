@@ -1,15 +1,9 @@
 package cecs429.classification;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import cecs429.classification.Classifier.DocClass;
-import ch.qos.logback.core.net.SyslogOutputStream;
-import static java.util.stream.Collectors.*;
 import java.util.ArrayList;
-import static java.util.Map.Entry.*;
 
 public class RocchioClassification {
 
@@ -28,10 +22,6 @@ public class RocchioClassification {
 		for (Map.Entry<String, Double> entry : centroid.vectorComponents.entrySet()) {
 			centroid.vectorComponents.put(entry.getKey(), centroid.vectorComponents.get(entry.getKey()) / classVectors.size());
 		}
-
-		// centroid.vectorComponents.entrySet().stream()
-		//  								    .sorted(Map.Entry.<String, Double>comparingByKey())
-		// 									.forEach(System.out::println);
 		return centroid;
 	}
 

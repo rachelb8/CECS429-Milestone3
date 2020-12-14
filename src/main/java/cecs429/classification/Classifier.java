@@ -70,7 +70,7 @@ public class Classifier {
 		printFirstNVectorComponents(vector52, 30);
 		List<DocVectorModel> disputedVectors52 = new ArrayList<DocVectorModel>();
 		disputedVectors52.add(vector52);
-//		RocchioClassification.applyRocchio(disputedVectors52, trainingSets);
+		RocchioClassification.applyRocchio(disputedVectors52, trainingSets);
 		
 		/*
 		 * kNN classification:
@@ -88,8 +88,8 @@ public class Classifier {
 	}
 	
 	public void runLiveDemo() {
-//		System.out.println("Rocchio Classification: ");
-//		RocchioClassification.applyRocchio(disputedVectors, trainingSets);
+		System.out.println("Rocchio Classification: ");
+		RocchioClassification.applyRocchio(disputedVectors, trainingSets);
 		System.out.println();
 		System.out.println("kNN Classification: ");
 		KNNClassification.applyKNN(disputedVectors, trainingSetVectors, 5);
@@ -154,8 +154,8 @@ public class Classifier {
 				}
 			}
 		}	
-//		c.runPrerecordedData();
-		c.runLiveDemo();
+		c.runPrerecordedData();
+		//c.runLiveDemo();
 	}
 }
 //========================== Code Graveyard ==============

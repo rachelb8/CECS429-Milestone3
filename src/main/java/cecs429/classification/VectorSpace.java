@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -20,7 +19,6 @@ import cecs429.index.ByteUtils;
 import cecs429.index.DiskIndexWriter;
 import cecs429.index.DiskPositionalIndex;
 import cecs429.index.Index;
-import cecs429.query.RankedRetrieval.DocumentScore;
 
 public class VectorSpace {
     DocumentCorpus repCorpus;

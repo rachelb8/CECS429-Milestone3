@@ -1,7 +1,5 @@
 package cecs429.classification;
 
-import cecs429.documents.*;
-
 import java.util.HashMap;
 import java.util.List;
 
