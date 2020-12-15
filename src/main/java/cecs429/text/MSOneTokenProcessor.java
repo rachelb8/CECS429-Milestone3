@@ -1,20 +1,29 @@
 package cecs429.text;
+
 import java.util.List;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
 
+import cecs429.documents.DirectoryCorpus;
+import cecs429.documents.DocumentCorpus;
+import cecs429.index.DiskIndexWriter;
+import cecs429.index.DiskPositionalIndex;
+import cecs429.index.Index;
+import cecs429.index.PositionalInvertedIndex;
+
 public class MSOneTokenProcessor implements TokenProcessor {
  
-
     @Override
     public List<String> processToken(String token) {
+        String term = token.toLowerCase();
         SnowballStemmer stemmer = new englishStemmer();
         List<String> processedTokens = new ArrayList<String>();
         //Converts string to an array of individual character strings
         //This makes operating on the string easier 
         ArrayList<String> baseStringArray = new ArrayList<>();
-        for (char lChar : token.toCharArray()) {
+        for (char lChar : term.toCharArray()) {
             String charString = String.valueOf(lChar);
             baseStringArray.add(charString);
         }
@@ -108,7 +117,8 @@ public class MSOneTokenProcessor implements TokenProcessor {
         for (String lString : allParts){
             stemmer.setCurrent(lString);
             stemmer.stem();
-            allStemmed.add(stemmer.getCurrent());
+            String stemmedTerm = stemmer.getCurrent();
+            allStemmed.add(stemmedTerm);
         }
         
         
@@ -121,6 +131,15 @@ public class MSOneTokenProcessor implements TokenProcessor {
         return processedTokens;
     }
 
+    public static void main(String[] args) {
+        String directory = "FedPapers/All";
+        DocumentCorpus corpus = DirectoryCorpus.loadMilestone1Directory(Paths.get(directory).toAbsolutePath());
+        Index index = DiskIndexWriter.indexCorpus(corpus);
+        for (String lString : index.getVocabulary()){
+            System.out.print(lString + " ");
+        }
+
+    }
     
 
     

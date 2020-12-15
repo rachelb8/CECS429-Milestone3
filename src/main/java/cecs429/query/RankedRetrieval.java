@@ -8,6 +8,7 @@ import cecs429.documents.DocumentCorpus;
 import cecs429.index.DiskPositionalIndex;
 import cecs429.index.Posting;
 import cecs429.text.MSOneTokenProcessor;
+import cecs429.text.TokenProcessor;
 
 public class RankedRetrieval {
 	
@@ -35,7 +36,7 @@ public class RankedRetrieval {
 	 */
     public PriorityQueue<DocumentScore> rankQuery(DocumentCorpus corpus, DiskPositionalIndex diskIndex, String queryString){
     	corpusLocal = corpus;
-    	MSOneTokenProcessor mTokenProcessor = new MSOneTokenProcessor();
+    	TokenProcessor mTokenProcessor = new MSOneTokenProcessor();
         String[] queryWords = queryString.split(" ");
         List<DocumentScore> accumulator = new ArrayList<>();
         for (int i = 0; i < queryWords.length; i++){

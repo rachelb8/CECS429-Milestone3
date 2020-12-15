@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -20,7 +19,6 @@ import cecs429.index.ByteUtils;
 import cecs429.index.DiskIndexWriter;
 import cecs429.index.DiskPositionalIndex;
 import cecs429.index.Index;
-import cecs429.query.RankedRetrieval.DocumentScore;
 
 public class VectorSpace {
     DocumentCorpus repCorpus;
@@ -28,20 +26,17 @@ public class VectorSpace {
     HashMap <Integer, DocVectorModel> vectors;
     List<String> vocab;
     
-    public VectorSpace(String directory, boolean existingIndex){
-        repCorpus = DirectoryCorpus.loadMilestone1Directory(Paths.get(directory).toAbsolutePath());
+    public VectorSpace(DiskPositionalIndex dIndexArg, List<String> vocabularyArg, boolean existsBool){
+        repCorpus = DirectoryCorpus.loadMilestone1Directory(Paths.get(dIndexArg.getCorpusPath()).toAbsolutePath());
         repCorpus.getDocuments();
-        if (existingIndex){
-            repIndex = new DiskPositionalIndex(directory);            
-        }
-        else{
-            repIndex = new DiskPositionalIndex(directory);
-            Index repInvertedIndex = DiskIndexWriter.indexCorpus(repCorpus);
-            DiskIndexWriter.writeIndex(repInvertedIndex, directory);
+        repIndex = dIndexArg;
+        if (!existsBool){
+            Index lIndex = DiskIndexWriter.indexCorpus(repCorpus);
+            DiskIndexWriter.writeIndex(lIndex, dIndexArg.getCorpusPath());
         }
         vectors = new HashMap <Integer, DocVectorModel> ();
-        vocab = repIndex.getVocabulary();
-        initializeVectorSpace(directory);
+        vocab = vocabularyArg;
+        initializeVectorSpace(dIndexArg.getCorpusPath());
     }
     
     public void initializeVectorSpace(String directoryArg){
@@ -91,12 +86,10 @@ public class VectorSpace {
         for (int lInt : vectors.keySet()){
             DocVectorModel lVector = vectors.get(lInt);
             double weight = repIndex.getDocWeight(lInt);
+            lVector.setTitle(repCorpus.getDocument(lInt).getTitle());
             lVector.setWeight(weight);
+            lVector.normalize();
         }
-        for (int id: vectors.keySet()){
-            // System.out.println(repCorpus.getDocument(id).getTitle());
-        }
-        // System.out.println(".");
     }
 
     public void updateVector(int idArg, String termArg, double docScore) {
@@ -118,32 +111,15 @@ public class VectorSpace {
 
     }
 
-    public void addVector(DocVectorModel vectorArg){
-        vectors.add(vectorArg);
-    }
-
-    public void addVectorSpace(VectorSpace spaceArg){
-        for (DocVectorModel lVectorModel : spaceArg.vectors){
-            vectors.add(lVectorModel);
-        }        
-    }
-
-    public DocVectorModel getVectorModel(Classifier.DocClass classificationArg, int docId){
-        DocVectorModel resultVectorModel = null;
-        for (DocVectorModel lVector : vectors){
-            if (!lVector.classification.equals(classificationArg)){
-                continue;
-            }
-            if (lVector.docId != docId){
-                continue;
-            }
-            resultVectorModel = lVector;
+    public void setClassifications(Classifier.DocClass classArg){
+        for (DocVectorModel lModel: vectors.values()){
+            lModel.setClassification(classArg);
         }
-        return resultVectorModel;
-
     }
 
     public List<String> getVocab(){
         return vocab;
     }
+
+
 }
