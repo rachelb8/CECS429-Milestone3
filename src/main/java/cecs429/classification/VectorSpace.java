@@ -90,7 +90,6 @@ public class VectorSpace {
             lVector.setWeight(weight);
             lVector.normalize();
         }
-        // System.out.println(".");
     }
 
     public void updateVector(int idArg, String termArg, double docScore) {

@@ -29,6 +29,13 @@ public class Classifier {
 	static List<DocVectorModel> trainingSetVectors;
 	static VectorSpace[] trainingSets;
 	
+	static int BENCHMARK_K = 3;
+	static int PRERECORD_K = 5;
+	static int LIVEDEMO_K = 5;
+	
+	static int BENCHMARK_COMPONENTS_NUM = 10;
+	static int PRERECORD_COMPONENTS_NUM = 30;
+	
 	public static enum DocClass {
 		HAMILTON,
 		MADISON,
@@ -46,7 +53,6 @@ public class Classifier {
 		DiskIndexWriter.writeIndex(aInvertedIndex, aPath);
 
 		return new VectorSpace(allIndex, aInvertedIndex.getVocabulary(), existsBool);
-
 	}
 	
 	public List<String> getFullVocabSet()
@@ -54,50 +60,131 @@ public class Classifier {
 		return allIndex.getVocabulary();
 	}
 
-	public void classifyVectors(){
-
+	public void runBenchmarkChecks() {
+		/*
+		 * KNN BENCHMARKS:
+		 * kNN with k=3 and Euclidian distance:
+		 * 
+		 * "paper_50.txt" nearest to: 1: "paper_48.txt" (0.821775) 2: "paper_58.txt"
+		 * (0.844832) 3: "paper_59.txt" (0.857783)
+		 * 
+		 * "paper_51.txt" nearest to: 1: "paper_10.txt" (0.794238) 2: "paper_43.txt"
+		 * (0.799546) 3: "paper_78.txt" (0.811363
+		 * 
+		 * "paper_53.txt" First 10 components of vector: 0 0 0 0.0222767 0 0 0 0 0 0
+		 * Nearest to: 1: "paper_36.txt" (0.798794) 2: "paper_84.txt" (0.800874) 3:
+		 * "paper_58.txt" (0.812979)
+		 */
+		
+		System.out.println("kNN Classification: ");
+		DocVectorModel vector50 = disputedVectors.stream().filter(vector -> vector.getTitle().equals("paper_50.txt")).findAny().get();
+		printFirstNVectorComponents(vector50, BENCHMARK_COMPONENTS_NUM);
+		List<DocVectorModel> disputedVectors50 = new ArrayList<DocVectorModel>();
+		disputedVectors50.add(vector50);
+		KNNClassification.applyKNN(disputedVectors50, trainingSetVectors, BENCHMARK_K);
+		
+		DocVectorModel vector51 = disputedVectors.stream().filter(vector -> vector.getTitle().equals("paper_51.txt")).findAny().get();
+		printFirstNVectorComponents(vector51, BENCHMARK_COMPONENTS_NUM);
+		List<DocVectorModel> disputedVectors51 = new ArrayList<DocVectorModel>();
+		disputedVectors51.add(vector51);
+		KNNClassification.applyKNN(disputedVectors51, trainingSetVectors, BENCHMARK_K);
+		
+		DocVectorModel vector53 = disputedVectors.stream().filter(vector -> vector.getTitle().equals("paper_53.txt")).findAny().get();
+		printFirstNVectorComponents(vector53, BENCHMARK_COMPONENTS_NUM);
+		List<DocVectorModel> disputedVectors53 = new ArrayList<DocVectorModel>();
+		disputedVectors53.add(vector53);
+		KNNClassification.applyKNN(disputedVectors53, trainingSetVectors, BENCHMARK_K);
+		System.out.println();
+		
+		
+		/*
+		 * ROCHIO BENCHMARKS:
+		 * 
+		 * First 10 components of centroid vector for /hamilton: 0.014753 0.000891329
+		 * 0.001399 0 0.000401945 0.000607439 0.000339432 0.000394253 0.00126622 0
+		 * 
+		 * First 10 components of centroid vector for /madison: 0.0092167 0 0.0013554 0
+		 * 0 0 0 0 0 0.00124324
+		 * 
+		 * First 10 components of centroid vector for /jay: 0 0 0 0 0 0 0 0 0 0
+		 * 
+		 * Dist to /hamilton for doc "paper_49.txt" is 0.603563 Dist to /madison for doc
+		 * "paper_49.txt" is 0.602587 Dist to /jay for doc "paper_49.txt" is 0.69839 Low
+		 * distance for "paper_49.txt" is /madison
+		 */
+		
+		System.out.println("Rocchio Classification: ");
+		DocVectorModel hCentroidVector = RocchioClassification.findCentroid(trainingSets[0]); // Hamilton
+		DocVectorModel jCentroidVector = RocchioClassification.findCentroid(trainingSets[1]); // Jay
+		DocVectorModel mCentroidVector = RocchioClassification.findCentroid(trainingSets[2]); // Madison
+		
+		System.out.println("Centroid vector for /hamilton: ");
+		printFirstNVectorComponents(hCentroidVector, BENCHMARK_COMPONENTS_NUM);
+		
+		System.out.println("Centroid vector for /madison: ");
+		printFirstNVectorComponents(mCentroidVector, BENCHMARK_COMPONENTS_NUM);
+		
+		System.out.println("Centroid vector for /jay: ");
+		printFirstNVectorComponents(jCentroidVector, BENCHMARK_COMPONENTS_NUM);
+		
+		DocVectorModel vector49 = disputedVectors.stream().filter(vector -> vector.getTitle().equals("paper_49.txt")).findAny().get();
+		List<DocVectorModel> disputedVectors49 = new ArrayList<DocVectorModel>();
+		disputedVectors49.add(vector49);
+		RocchioClassification.applyRocchio(disputedVectors49, trainingSets);
+		
 	}
 	
 	public void runPrerecordedData() {
-		/*
-		 * Rocchio classification:
-		 * For the document "paper_52.txt":
-		 * 	- the first 30 components (alphabetically) of the normalized vector for the document
-		 *	- TODO the exact Euclidian distance between the normalized vector for the document and each of the 3 class centroids
-		 */
-		System.out.println("Rocchio Classification: ");
-		DocVectorModel vector52 = disputedVectors.stream().filter(vector -> vector.getTitle().equals("paper_52.txt")).findAny().get();
-		printFirstNVectorComponents(vector52, 30);
-		List<DocVectorModel> disputedVectors52 = new ArrayList<DocVectorModel>();
-		disputedVectors52.add(vector52);
-		RocchioClassification.applyRocchio(disputedVectors52, trainingSets);
-		
 		/*
 		 * kNN classification:
 		 * For the document "paper_53.txt":
 		 * 	- the first 30 components (alphabetically) of the normalized vector for the document
 		 *	- the 5 closest (k=5) vectors in the training set, and their Euclidian distances
 		 */
-		System.out.println();
 		System.out.println("kNN Classification: ");
 		DocVectorModel vector53 = disputedVectors.stream().filter(vector -> vector.getTitle().equals("paper_53.txt")).findAny().get();
-		printFirstNVectorComponents(vector53, 30);
+		printFirstNVectorComponents(vector53, PRERECORD_COMPONENTS_NUM);
 		List<DocVectorModel> disputedVectors53 = new ArrayList<DocVectorModel>();
 		disputedVectors53.add(vector53);
-		KNNClassification.applyKNN(disputedVectors53, trainingSetVectors, 5);
+		KNNClassification.applyKNN(disputedVectors53, trainingSetVectors, PRERECORD_K);
+		System.out.println();
+		
+		/*
+		 * Rocchio classification:
+		 * For the document "paper_52.txt":
+		 * 	- the first 30 components (alphabetically) of the normalized vector for the document
+		 *	- the exact Euclidian distance between the normalized vector for the document and each of the 3 class centroids
+		 */
+		System.out.println("Rocchio Classification: ");
+		DocVectorModel vector52 = disputedVectors.stream().filter(vector -> vector.getTitle().equals("paper_52.txt")).findAny().get();
+		printFirstNVectorComponents(vector52, PRERECORD_COMPONENTS_NUM);
+		List<DocVectorModel> disputedVectors52 = new ArrayList<DocVectorModel>();
+		disputedVectors52.add(vector52);
+		RocchioClassification.applyRocchio(disputedVectors52, trainingSets);
+		
+		
 	}
 	
 	public void runLiveDemo() {
-		System.out.println("Rocchio Classification: ");
-		RocchioClassification.applyRocchio(disputedVectors, trainingSets);
-		System.out.println();
+		/*
+		 * kNN classification:
+		 * The kNN classification decision for all disputed documents, using k=5
+		 */
 		System.out.println("kNN Classification: ");
-		KNNClassification.applyKNN(disputedVectors, trainingSetVectors, 5);
+		KNNClassification.applyKNN(disputedVectors, trainingSetVectors, LIVEDEMO_K);
+		System.out.println();
+		
+		/*
+		 * Rocchio classification:
+		 * The Rocchio classification decision for all disputed documents
+		 */
+		System.out.println("Rocchio Classification: ");
+		RocchioClassification.applyRocchio(disputedVectors, trainingSets);	
 	}
 	
 	public static void printFirstNVectorComponents(DocVectorModel vector, int n) {
 		System.out.println("\"" + vector.getTitle() + "\"");
-		System.out.println("First 30 components of the normalized vector:");
+		System.out.println("First " + n + " components of the normalized vector:");
 		System.out.print("<");
 		vector.vectorComponents.entrySet()
 			.stream()
@@ -154,6 +241,7 @@ public class Classifier {
 				}
 			}
 		}	
+//		c.runBenchmarkChecks();
 //		c.runPrerecordedData();
 		c.runLiveDemo();
 	}

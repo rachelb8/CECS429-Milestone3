@@ -30,6 +30,8 @@ public class RocchioClassification {
         DocVectorModel hCentroidVector = findCentroid(trainingSets[0]); // Hamilton
 		DocVectorModel jCentroidVector = findCentroid(trainingSets[1]); // Jay
 		DocVectorModel mCentroidVector = findCentroid(trainingSets[2]); // Madison
+		
+		disputedDocs.sort((o1, o2) -> o1.getTitle().compareTo(o2.getTitle()));
 
 		for (DocVectorModel disputedDoc : disputedDocs) {
 			

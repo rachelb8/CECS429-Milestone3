@@ -64,10 +64,11 @@ public class KNNClassification {
 				disputedDoc.setClassification(Classifier.DocClass.MADISON);
 				printClassificationResults(disputedDoc);
 			} else if (hCount == mCount){
+				System.out.println(disputedDoc.getTitle() + " - TIE");
 				// Choose a tie-breaking strategy
-				tieBreakLowerK(disputedDoc, k);
-//				tieBreakWeightByDistance(disputedDoc, sortedDistances);
-//				tieBreakRandomSelection(disputedDoc);
+				// tieBreakLowerK(disputedDoc, k);
+				// tieBreakWeightByDistance(disputedDoc, sortedDistances);
+				// tieBreakRandomSelection(disputedDoc);
 				
 			}	
 		}	
